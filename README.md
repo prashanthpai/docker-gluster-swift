@@ -21,6 +21,9 @@ respectively. This directory on the host machine containing all the individual
 glusterfs mounts is then bind-mounted inside the container. This avoids having
 to bind mount individual glusterfs volumes.
 
+If you have selinux enforced on the host machine, refer to Troubleshooting
+section below before running the container.
+
 ```bash
 # docker run -d -p 8080:8080 -v /mnt/gluster-object:/mnt/gluster-object prashanthpai/gluster-swift:dev
 ```
@@ -84,6 +87,7 @@ invoked by systemd will look like this:
 
 ### TODO
 
+* Install gluster-swift from RPMs. (Currently installed from source)
 * Allow specifying list of volumes to be exported during run time.
 * Allow bind mounting custom configuration files (including ring files)
   into `/etc/swift` inside the container, thus making it truly stateless.
