@@ -1,12 +1,7 @@
 # docker-gluster-swift
 Run gluster-swift inside a docker container.
 
-# Building
-
-As of now, you'll need to specify the names of volumes to be exported over
-object interface during build time itself by editing `Dockerfile` and changing
-arguments to `gluster-swift-gen-builders` command. This will be made dynamic
-or configurable during runtime later.
+## Building
 
 ```bash
 # docker build --rm --tag prashanthpai/gluster-swift:dev .
@@ -14,19 +9,23 @@ or configurable during runtime later.
 
 ## Running
 
-On the host machine, mount one or more volumes under `/mnt/gluster-object`
-directory. For example, if you have two volumes named `test` and `test2`, they
+On the host machine, mount one or more gluster volumes under the directory
+`/mnt/gluster-object` with mountpoint name being same as that of the volume.
+
+For example, if you have two gluster volumes named `test` and `test2`, they
 should be mounted at `/mnt/gluster-object/test` and `/mnt/gluster-object/test2`
 respectively. This directory on the host machine containing all the individual
 glusterfs mounts is then bind-mounted inside the container. This avoids having
-to bind mount individual glusterfs volumes.
+to bind mount individual gluster volumes.
 
-If you have selinux enforced on the host machine, refer to Troubleshooting
-section below before running the container.
+**Example:**
 
 ```bash
-# docker run -d -p 8080:8080 -v /mnt/gluster-object:/mnt/gluster-object prashanthpai/gluster-swift:dev
+# docker run -d -p 8080:8080 -v /mnt/gluster-object:/mnt/gluster-object -e GLUSTER_VOLUMES="test test2" prashanthpai/gluster-swift:dev
 ```
+
+If you have selinux set to enforced on the host machine, refer to the
+Troubleshooting section below before running the container.
 
 **Note:**
 
@@ -35,9 +34,34 @@ section below before running the container.
 -p : Publishes the container's port to the host port. They need not be the same.
      If host port is omitted, a random port will be mapped. So you can run
      multiple instances of the container, each serving on a different port on
-     the host machine.
+     the same host machine.
 -v : Bind mount a host path inside the container.
+-e : Set and pass environment variable. In our case, provide a list of volumes
+     to be exported over object inerface by setting GLUSTER_VOLUMES environment
+     variable.
 ~~~
+
+### Custom deployment
+
+You can provide your own configuration files and ring files and have the
+swift processes running inside container use those. This can be done by
+placing your conf files and ring files in a directory on your host machine
+and then bind-mounting it inside the container at `/etc/swift`.
+
+**Example:**
+
+Assuming you have conf files and ring files present at `/tmp/swift` on the
+machine, you can spawn the container as follows:
+
+```bash
+# docker run -d -p 8080:8080 -v /tmp/swift:/etc/swift -v /mnt/gluster-object:/mnt/gluster-object prashanthpai/gluster-swift:dev
+```
+
+If the host machine has SELinux set to enforced:
+
+```bash
+# chcon -Rt svirt_sandbox_file_t /tmp/swift
+```
 
 ### Troubleshooting
 
@@ -71,23 +95,6 @@ volumes on host machine as shown in following example:
 mount -t glusterfs -o selinux,context="system_u:object_r:svirt_sandbox_file_t:s0" `hostname`:test /mnt/gluster-object/test
 ```
 
-**DNS**
-
-This is more like a note to self for my VM environment. Make note of DNS
-servers on the host machine listed at `/etc/resolv.conf`.
-
-Edit `/usr/lib/systemd/system/docker.service` file and add those DNS servers
-to the command invoking docker service. The docker service process when
-invoked by systemd will look like this:
-
-```bash
-/usr/bin/docker daemon --exec-opt native.cgroupdriver=systemd --selinux-enabled --log-driver=journald --dns 10.75.5.25 --dns 10.68.5.26 --dns 10.38.5.26
-```
-
-
 ### TODO
 
 * Install gluster-swift from RPMs. (Currently installed from source)
-* Allow specifying list of volumes to be exported during run time.
-* Allow bind mounting custom configuration files (including ring files)
-  into `/etc/swift` inside the container, thus making it truly stateless.

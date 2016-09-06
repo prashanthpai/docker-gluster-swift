@@ -25,7 +25,7 @@ RUN yum --setopt=tsflags=nodocs -y update && \
         git memcached python-prettytable && \
     yum -y clean all
 
-# Configure supervisor
+# Configure supervisord
 RUN mkdir -p /etc/supervisor /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 
@@ -39,15 +39,15 @@ RUN git clone git://review.gluster.org/gluster-swift /tmp/gluster-swift && \
 # Replace openstack swift conf files with local gluster-swift ones
 COPY etc/swift/* /etc/swift/
 
-# Prepare ring files. This will "export listed volumes over object interface"
-# TODO: Make providing this list of volume names dynamic i.e during run time.
-RUN mkdir -p /mnt/gluster-object && gluster-swift-gen-builders test test2
-
-# Gluster volumes will be mounted under this directory
+# Gluster volumes will be mounted *under* this directory.
 VOLUME /mnt/gluster-object
+
+# Copy script. This will check and generate ring files and will invoke
+# supervisord which starts the required gluster-swift services.
+COPY swift-start.sh /usr/local/bin/swift-start.sh
+RUN chmod +x /usr/local/bin/swift-start.sh
 
 # The proxy server listens on port 8080
 EXPOSE 8080
 
-# Let supervisord start swift services
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+CMD /usr/local/bin/swift-start.sh
