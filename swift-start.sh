@@ -19,4 +19,4 @@ fi
 
 # Let supervisord start swift services
 echo "Starting gluster-swift services..."
-/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
