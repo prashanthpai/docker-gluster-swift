@@ -25,10 +25,6 @@ RUN yum --setopt=tsflags=nodocs -y update && \
         git memcached python-prettytable && \
     yum -y clean all
 
-# Configure supervisord
-RUN mkdir -p /etc/supervisor /var/log/supervisor
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-
 # Install gluster-swift from source.
 # TODO: When gluster-swift is shipped as RPM, just use that.
 RUN git clone git://review.gluster.org/gluster-swift /tmp/gluster-swift && \
@@ -41,6 +37,10 @@ COPY etc/swift/* /etc/swift/
 
 # Gluster volumes will be mounted *under* this directory.
 VOLUME /mnt/gluster-object
+
+# Configure supervisord
+RUN mkdir -p /etc/supervisor /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 # Copy script. This will check and generate ring files and will invoke
 # supervisord which starts the required gluster-swift services.
