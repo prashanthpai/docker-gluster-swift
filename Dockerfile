@@ -42,6 +42,11 @@ VOLUME /mnt/gluster-object
 RUN mkdir -p /etc/supervisor /var/log/supervisor
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 
+# If any of the processes run by supervisord dies, kill supervisord
+# as well, thus terminating the container.
+COPY supervisor_suicide.py /usr/local/bin/supervisor_suicide.py
+RUN chmod +x /usr/local/bin/supervisor_suicide.py
+
 # Copy script. This will check and generate ring files and will invoke
 # supervisord which starts the required gluster-swift services.
 COPY swift-start.sh /usr/local/bin/swift-start.sh
