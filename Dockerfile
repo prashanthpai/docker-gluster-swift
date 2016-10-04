@@ -32,9 +32,6 @@ RUN git clone git://review.gluster.org/gluster-swift /tmp/gluster-swift && \
     python setup.py install && \
     cd -
 
-# Replace openstack swift conf files with local gluster-swift ones
-COPY etc/swift/* /etc/swift/
-
 # Gluster volumes will be mounted *under* this directory.
 VOLUME /mnt/gluster-object
 
@@ -51,6 +48,9 @@ RUN chmod +x /usr/local/bin/supervisor_suicide.py
 # supervisord which starts the required gluster-swift services.
 COPY swift-start.sh /usr/local/bin/swift-start.sh
 RUN chmod +x /usr/local/bin/swift-start.sh
+
+# Replace openstack swift conf files with local gluster-swift ones
+COPY etc/swift/* /etc/swift/
 
 # The proxy server listens on port 8080
 EXPOSE 8080
