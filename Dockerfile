@@ -1,7 +1,7 @@
 FROM centos:7
 MAINTAINER Prashanth Pai <ppai@redhat.com>
 
-# centos-release-openstack-kilo package resides in the extras repo.
+# centos-release-openstack-newton package resides in the extras repo.
 # All subsequent actual packages come from the CentOS Cloud SIG repo:
 # http://mirror.centos.org/centos/7/cloud/x86_64/
 
@@ -17,7 +17,7 @@ MAINTAINER Prashanth Pai <ppai@redhat.com>
 
 RUN yum --setopt=tsflags=nodocs -y update && \
     yum --setopt=tsflags=nodocs -y install \
-        centos-release-openstack-kilo \
+        centos-release-openstack-newton \
         epel-release && \
     yum --setopt=tsflags=nodocs -y install \
         openstack-swift openstack-swift-{proxy,account,container,object,plugin-swift3} \
